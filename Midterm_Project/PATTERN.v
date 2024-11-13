@@ -1,7 +1,7 @@
 `define CYCLE_TIME 20.0
-`define PATTERN_NUMBER 100
+`define PATTERN_NUMBER 1000
 `define RANDOM_SEED 42
-// `define SHOW_PROCESS
+`define SHOW_PROCESS
 
 `include "../00_TESTBED/pseudo_DRAM.v"
 
@@ -57,7 +57,7 @@ logic [1:0] ratio_mode;
 logic [7:0] golden_out;
 logic [7:0] gray [0:5][0:5];
 logic [19:0] contrast_sum [0:2];
-real contrast_avg [0:2];
+integer contrast_avg [0:2];
 logic [19:0] exposure_avg;
 
 always @* begin
@@ -131,7 +131,7 @@ task gen_pattern_task; begin
         for (integer i = 0; i < 5; i = i + 1)
             for (integer j = 0; j < 6; j = j + 1)
                 contrast_sum[2] = contrast_sum[2] + contrast(gray[i][j], gray[i+1][j]);
-        contrast_avg[2] = contrast_sum[2] / 36.0;
+        contrast_avg[2] = contrast_sum[2] / 36;
         if (contrast_avg[0] >= contrast_avg[1] && contrast_avg[0] >= contrast_avg[2])
             golden_out = 8'd0;
         else if (contrast_avg[1] > contrast_avg[0] && contrast_avg[1] >= contrast_avg[2])
@@ -200,8 +200,17 @@ begin
     if (out_data !== golden_out) FAIL_wrong_output_task;
     @(negedge clk);
 	if (out_valid !== 1'b0) FAIL_output_cycle_task;
-    $display("\033[1;34mPASS PATTERN NO.%04d | latency = %4d clk\033[0m", i_pat, latency);
-    $display("\033[1;34mPic_no: %d | Mode: %d | Ratio_mode: %d\033[0m", pic_no, mode, ratio_mode);
+    $write("\033[1;34mPASS PATTERN NO.%04d | latency = %4d clk\033[0m", i_pat, latency);
+    $write("\033[1;34m | Pic_no: %d | Mode: ", pic_no);
+    if (mode == 1) begin
+        $write("\033[1;34mExpo | Ratio: \033[0m");
+        case(ratio_mode)
+            0: $display("\033[1;34m0.25\033[0m");
+            1: $display("\033[1;34m0.5\033[0m");
+            2: $display("\033[1;34m1\033[0m");
+            3: $display("\033[1;34m2\033[0m");
+        endcase
+    end else $display("\033[1;34mFocus\033[0m");
 end endtask
 
 task FAIL_no_reset_task; begin
@@ -245,6 +254,39 @@ task FAIL_wrong_output_task; begin
     end
 	$display("Golden_out: %d", golden_out);
 	$display("Design_out: %d", out_data);
+    $write("Pic_no: %d | Mode: ", pic_no);
+    if (mode == 1) begin
+        $write("Expo | Ratio: ");
+        case(ratio_mode)
+            0: $display("0.25");
+            1: $display("0.5");
+            2: $display("1");
+            3: $display("2");
+        endcase
+    end else begin
+        $display("Focus");
+        $display("Contrast_avg: %f %f %f", contrast_avg[0], contrast_avg[1], contrast_avg[2]);
+    end
+    for (integer i = 0; i < 32; i = i + 1) begin
+        for (integer j = 0; j < 32; j = j + 1) begin
+            $write("%3d ", image[pic_no][0][i][j]);
+        end
+        $display("");
+    end
+    $display("");
+    for (integer i = 0; i < 32; i = i + 1) begin
+        for (integer j = 0; j < 32; j = j + 1) begin
+            $write("%3d ", image[pic_no][1][i][j]);
+        end
+        $display("");
+    end
+    $display("");
+    for (integer i = 0; i < 32; i = i + 1) begin
+        for (integer j = 0; j < 32; j = j + 1) begin
+            $write("%3d ", image[pic_no][2][i][j]);
+        end
+        $display("");
+    end
     $finish;
 end endtask
 
