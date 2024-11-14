@@ -1,6 +1,6 @@
-`define CYCLE_TIME 20.0
+`define CYCLE_TIME 2.6
 `define PATTERN_NUMBER 1000
-`define RANDOM_SEED 42
+`define RANDOM_SEED 4907
 `define SHOW_PROCESS
 
 `include "../00_TESTBED/pseudo_DRAM.v"
@@ -43,7 +43,33 @@ integer seed;
 integer i_pat;
 parameter patnum = `PATTERN_NUMBER;
 integer total_latency, latency;
+`ifdef D1
 parameter DRAM_p_r = "../00_TESTBED/DRAM/dram1.dat";
+`endif
+`ifdef D2
+parameter DRAM_p_r = "../00_TESTBED/DRAM/dram2.dat";
+`endif
+`ifdef D3
+parameter DRAM_p_r = "../00_TESTBED/DRAM/dram3.dat";
+`endif
+`ifdef D4
+parameter DRAM_p_r = "../00_TESTBED/DRAM/dram4.dat";
+`endif
+`ifdef D5
+parameter DRAM_p_r = "../00_TESTBED/DRAM/dram5.dat";
+`endif
+`ifdef D6
+parameter DRAM_p_r = "../00_TESTBED/DRAM/dram6.dat";
+`endif
+`ifdef D7
+parameter DRAM_p_r = "../00_TESTBED/DRAM/dram7.dat";
+`endif
+`ifdef D8
+parameter DRAM_p_r = "../00_TESTBED/DRAM/dram8.dat";
+`endif
+`ifdef D9
+parameter DRAM_p_r = "../00_TESTBED/DRAM/dram9.dat";
+`endif
 
 
 //================================================================
@@ -182,7 +208,7 @@ task output_pattern_task; begin
 end endtask
 
 task wait_out_valid_task; begin
-    latency = 1;
+    latency = 0;
     while (out_valid !== 1'b1) begin
         latency = latency + 1;
         if (latency > 20000) begin
